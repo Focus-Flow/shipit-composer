@@ -30,7 +30,7 @@ module.exports = function (shipitInstance) {
       var flags = Array.isArray(shipit.config.composer.installFlags) ? shipit.config.composer.installFlags.join(' ') : shipit.config.composer.installFlags;
       var AF = args ? flags ? args.concat(' ',flags) : args : flags ? flags : '';
       var command = shipit.config.composer.composerCommand;
-      
+
       return shipit[method](
         sprintf('cd %s && %s install %s', cdPath, command, AF)
       );
@@ -39,15 +39,17 @@ module.exports = function (shipitInstance) {
 
     if(shipit.composer_inited) {
 
-      return install(shipit.config.composer.remote)
-      .then(function () {
-        shipit.log('composer install complete');
-      })
-      .then(function () {
-        shipit.emit('composer_installed')
+    return install(shipit.config.composer.remote)
+    .then(function (res) {
+        if(res.child.exitCode == 0) {
+          shipit.log('composer install complete');
+          shipit.emit('composer_installed');
+        } else {
+          throw new Error(shipit.log('composer install failed'));
+        }
       })
       .catch(function (e) {
-        shipit.log(e);
+        throw new Error(shipit.log(e));
       });
 
     }else {
